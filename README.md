@@ -301,9 +301,8 @@ proc log2[T: float32 | float64](x: T): T #Computes the binary logarithm (base 2)
 proc exp(x: float64): float64 {..} #Computes the exponential function of x (pow(E, x)) 
 proc fmod(x, y: float64): float64 {..} #Computes the remainder of x divided by y
      # eg: echo fmod(-2.5, 0.3) ## -0.1
-proc `mod`[T: float32 | float64](x, y: T): T
-#Computes the modulo operation for float operators. Equivalent to x - y * floor(x/y). Note that 
-#the remainder will always have the same sign as the divisor.
+proc `mod`[T: float32 | float64](x, y: T): T #Computes the modulo operation for float operators.
+# Equivalent to x - y * floor(x/y). Note that the remainder will always have the same sign as the divisor.
      # eg: echo (4.0 mod -3.1) # -2.2
 proc `^`[T](x, y: T): T #Computes x to the power y`. ``x must be non-negative, 
 #use pow <#pow,float,float> for negative #exponents.
