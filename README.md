@@ -24,7 +24,7 @@ nim compile --run greetings.nim arg1 arg2
 Indentation is Nim's way of grouping statements. Indentation is done with spaces only, tabulators are not allowed.
 
 String literals are enclosed in double quotes. The var statement declares a new variable named name of type  string with the value that is returned by the readLine procedure. Since the compiler knows that readLine returns a string, you can leave out the type in the declaration (this is called local type inference). So this will work too:
-```
+```nim
 var name = readLine(stdin)
 ```
 #### Numbers
@@ -118,7 +118,7 @@ As it can be seen, for an of branch a comma separated list of values is also all
 
 The case statement can deal with integers, other ordinal types and strings. (What an ordinal type is will be explained soon.) For integers or other ordinal types value ranges are also possible:
 
-```
+```nim
 # this statement will be explained later:
 from strutils import parseInt
 
@@ -129,7 +129,7 @@ of 0..2, 4..7: echo "The number is in the set: {0, 1, 2, 4, 5, 6, 7}"
 of 3, 8: echo "The number is 3 or 8"
 ```
 However, the above code does not compile: the reason is that you have to cover every value that n may contain, but the code only handles the values 0..8. Since it is not very practical to list every other possible integer (though it is possible thanks to the range notation), we fix this by telling the compiler that for every other value nothing should be done:
-```
+```nim
 ...
 case n
 of 0..2, 4..7: echo "The number is in the set: {0, 1, 2, 4, 5, 6, 7}"
@@ -141,10 +141,10 @@ The empty discard statement is a do nothing statement. The compiler knows that a
 
 In general the case statement is used for subrange types or enumerations where it is of great help that the compiler checks that you covered any possible value.
 
-#### While statement
+### While statement
 
 The while statement is a simple looping construct:
-```
+```nim
 echo "What's your name? "
 var name = readLine(stdin)
 while name == "":
@@ -154,17 +154,17 @@ while name == "":
 ```
 The example uses a while loop to keep asking the users for their name, as long as the user types in nothing (only presses RETURN).
 
-#### For statement
+### For statement
 
 The for statement is a construct to loop over any element an iterator provides. The example uses the built-in countup iterator:
-```
+```nim
 echo "Counting to ten: "
 for i in countup(1, 10):
   echo i
 # --> Outputs 1 2 3 4 5 6 7 8 9 10 on different lines
 ```
 The built-in $ operator turns an integer (int) and many other types into a string. The variable i is implicitly declared by the for loop and has the type int, because that is what countup returns. i runs through the values 1, 2, .., 10. Each value is echo-ed. This code does the same:
-```
+```nim
 echo "Counting to 10: "
 var i = 1
 while i <= 10:
@@ -173,7 +173,7 @@ while i <= 10:
 # --> Outputs 1 2 3 4 5 6 7 8 9 10 on different lines
 ```
 Counting down can be achieved as easily (but is less often needed):
-```
+```nim
 echo "Counting down from 10 to 1: "
 for i in countdown(10, 1):
   echo i
@@ -181,18 +181,18 @@ for i in countdown(10, 1):
 ```
 
 Since counting up occurs so often in programs, Nim also has a .. iterator that does the same:
-```
+```nim
 for i in 1..10:
   ...
 ```
 
 Zero-indexed counting have two shortcuts ..< and ..^ to simplify counting to one less than the higher index:
-```
+```nim
 for i in 0..<10:
   ...  # 0..9
 ```
 or
-```
+```nim
 var s = "some string"
 for i in 0..<s.len:
   ...
@@ -255,7 +255,7 @@ elif system.hostOS == "macosx":
   echo "running on Mac OS X!"
 else:
   echo "unknown operating system"
-````
+```
 The when statement is almost identical to the if statement, but with these differences:
 
 - Each condition must be a constant expression since it is evaluated by the compiler.
@@ -479,7 +479,7 @@ Automatic type conversion in expressions with different kinds of floating point 
 ## Type Conversion
 
 Conversion between basic types is performed by using the type as a function:
-```
+```nim
 var
   x: int32 = 1.int32   # same as calling int32(1)
   y: int8  = int8('a') # 'a' == 97'i8
@@ -488,7 +488,7 @@ var
 
 ```
 
-```
+```nim
 type
   Name = string # A type alias gives you a new type that is interchangable
   Age = int     # with the old type but is more descriptive.
@@ -514,7 +514,7 @@ type
 ## More Types and Data Structures
 
 Enumerations allow a type to have one of a limited number of values
-```
+```nim
 type
   Color = enum cRed, cBlue, cGreen
   Direction = enum # Alternative formating
@@ -529,7 +529,7 @@ var
 discard dNorth > dEast # Enums are usually an "ordinal" type
 Subranges specify a limited valid range.
 
-```
+```nim
 type
   DieFaces = range[1..20] # Only an int from 1 to 20 is a valid value
 var
@@ -596,7 +596,7 @@ type
   LightTower = array[1..10, array[north..west, BlinkLights]]
 ```
 It is quite common to have arrays start at zero, so there's a shortcut syntax to specify a range from zero to the specified index minus one:
-```
+```nim
 type
   IntArray = array[0..5, int] # an array that is indexed with 0..5
   QuickArray = array[6, int]  # an array that is indexed with 0..5
@@ -641,7 +641,7 @@ let myDrink = drinks[2]
 ### From statement
 
 We have already seen the simple import statement that just imports all exported symbols. An alternative that only imports listed symbols is the from import statement:
-```
+```nim
 from mymodule import x, y, z
 ```
 The from statement can also force namespace qualification on symbols, thereby making symbols available, but needing to be qualified to be used.
@@ -656,7 +656,7 @@ mymodule.x()  # must qualify x with the module name as prefix
 x()           # using x here without qualification is a compile error
 ```
 Since module names are generally long to be descriptive, you can also define a shorter alias to use when qualifying symbols.
-```
+```nim
 from mymodule as m import nil
 
 m.x()         # m is aliasing mymodule
@@ -664,6 +664,6 @@ m.x()         # m is aliasing mymodule
 ### Include statement
 
 The include statement does something fundamentally different than importing a module: it merely includes the contents of a file. The include statement is useful to split up a large module into several files:
-```
+```nim
 include fileA, fileB, fileC
 ```
