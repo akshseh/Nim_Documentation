@@ -27,11 +27,11 @@ String literals are enclosed in double quotes. The var statement declares a new 
 ```nim
 var name = readLine(stdin)
 ```
-#### Numbers
+### Numbers
 
 Numerical literals are written as in most other languages. As a special twist, underscores are allowed for better readability: 1_000_000 (one million). A number that contains a dot (or 'e' or 'E') is a floating point literal:  1.0e9 (one billion). Hexadecimal literals are prefixed with 0x, binary literals with 0b and octal literals with 0o. A leading zero alone does not produce an octal
 
-#### Var statement
+### Var statement
 The var statement declares a new local or global variable:
 ```nim
 var                     # Declare (and assign) variables,
@@ -42,7 +42,7 @@ var                     # Declare (and assign) variables,
   a, b, c: string
   truth: bool = false
 ```
-#### Assignment operator
+### Assignment operator
 
 = is the assignment operator. The assignment operator cannot be overloaded, overwritten or forbidden, but this might change in a future version of Nim. You can declare multiple variables with a single assignment statement and all the variables will have the same value:
 
@@ -57,7 +57,7 @@ echo "y ", y  # outputs "y 3"
 Note that declaring multiple variables with a single assignment which calls a procedure can have unexpected results: the compiler will unroll the assignments and end up calling the procedure several times. If the result of the procedure depends on side effects, your variables may end up having different values! For safety use only constant values
 
 
-#### Let
+### Let
 The let statement works like the var statement but the declared symbols are single assignment variables: After the initialization their value cannot change:
 
 ```nim
@@ -70,7 +70,7 @@ let            # Use let to declare and bind variables *once*.
 x = "xyz"     # Illegal: assignment to `x`
 ```
 
-#### Constants
+### Constants
 Constants are symbols which are bound to a value. The constant's value cannot change. The compiler must be able to evaluate the expression in a constant declaration at compile time.
 Indentation can be used after the const keyword to list a whole section of constants:
 ```nim
@@ -207,7 +207,7 @@ for index, item in ["a","b"].pairs:
 # => b at index 1
 ```
 
-#### Scopes and the block statement
+### Scopes and the block statement
 
 Control flow statements have a feature not covered yet: they open a new scope. This means that in the following example, x is not accessible outside the loop:
 ```nim
@@ -223,7 +223,7 @@ echo x # does not work either
 ```
 The block's label (myblock in the example) is optional
 
-#### Break statement
+### Break statement
 
 A block can be left prematurely with a break statement. The break statement can leave a while, for, or a  block statement. It leaves the innermost construct, unless a label of a block is given:
 ```nim
@@ -287,7 +287,7 @@ This example shows a procedure named yes that asks the user a question and retur
 
 Some terminology: in the example question is called a (formal) parameter, "Should I..." is called an argument that is passed to this parameter
 
-#### Special proc
+### Special proc
 ```
 proc binom(n, k: int): int {..} #Computes the binomial coefficient
 proc isPowerOfTwo(x: int): bool {..} #Returns true, if x is a power of two, false otherwise. #Zero and negative numbers are not a power of two.
