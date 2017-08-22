@@ -288,7 +288,7 @@ This example shows a procedure named yes that asks the user a question and retur
 Some terminology: in the example question is called a (formal) parameter, "Should I..." is called an argument that is passed to this parameter
 
 ### Special proc
-```
+```nim
 proc binom(n, k: int): int {..} #Computes the binomial coefficient
 proc isPowerOfTwo(x: int): bool {..} #Returns true, if x is a power of two, false otherwise. 
 #Zero and negative numbers are not a power of two.
