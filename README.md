@@ -79,7 +79,7 @@ const            # Constants are computed at compile time. This provides
   compileBadCode = false
 ```
 
-### Control flow statements
+## Control flow statements
 
 The greetings program consists of 3 statements that are executed sequentially. Only the most primitive programs can get away with that: branching and looping are needed too.
 
@@ -265,7 +265,7 @@ The when statement is almost identical to the if statement, but with these diffe
 
 **Note:** To comment out a large piece of code, it is often better to use a when false: statement than to use real comments. This way nesting is possible.
 
-### Procedures
+## Procedures
 
 To define new commands like echo and readLine in the examples, the concept of a procedure is needed. (Some languages call them methods or functions.) In Nim new procedures are defined with the proc keyword:
 ```nim
@@ -290,9 +290,10 @@ Some terminology: in the example question is called a (formal) parameter, "Shoul
 ### Special proc
 ```
 proc binom(n, k: int): int {..} #Computes the binomial coefficient
-proc isPowerOfTwo(x: int): bool {..} #Returns true, if x is a power of two, false otherwise. #Zero and negative numbers are not a power of two.
+proc isPowerOfTwo(x: int): bool {..} #Returns true, if x is a power of two, false otherwise. 
+#Zero and negative numbers are not a power of two.
 proc sqrt(x: float64): float64 {..} #Computes the square root of x.
-proc floor(x: float64): float64 {..} #Computes the floor function (i.e., the largest integer not #greater than x)
+proc floor(x: float64): float64 {..} #Computes the floor function
 proc cbrt(x: float64): float64 {..} #Computes the cubic root of x 
 proc ln(x: float64): float64 {..} #Computes the natural log of x
 proc log10(x: float64): float64 {..} #Computes the common logarithm (base 10) of x 
@@ -301,11 +302,13 @@ proc exp(x: float64): float64 {..} #Computes the exponential function of x (pow(
 proc fmod(x, y: float64): float64 {..} #Computes the remainder of x divided by y
      # eg: echo fmod(-2.5, 0.3) ## -0.1
 proc `mod`[T: float32 | float64](x, y: T): T
-#Computes the modulo operation for float operators. Equivalent to x - y * floor(x/y). Note that #the remainder will always have the same sign as the divisor.
+#Computes the modulo operation for float operators. Equivalent to x - y * floor(x/y). Note that 
+#the remainder will always have the same sign as the divisor.
      # eg: echo (4.0 mod -3.1) # -2.2
-proc `^`[T](x, y: T): T
-#Computes x to the power y`. ``x must be non-negative, use pow <#pow,float,float> for negative #exponents.
+proc `^`[T](x, y: T): T #Computes x to the power y`. ``x must be non-negative, 
+#use pow <#pow,float,float> for negative #exponents.
 proc lcm[T](x, y: T): T #Computes the least common multiple of x and y
+
 ```
 
 ### Result variable
