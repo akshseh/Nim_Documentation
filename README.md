@@ -2,7 +2,6 @@
 
 Nim (formerly Nimrod) is a statically typed, imperative programming language that gives the programmer power without compromises on runtime efficiency.
 Nim is efficient, expressive, and elegant.
-
 We start the tour with a modified "hello world" program:
 ```nim
 # This is a comment
@@ -12,13 +11,13 @@ echo "Hi, ", name, "!"
 ```
 Save the file as xyz.nim and compile using:
 
-```
+```nim
 nim compile --run xyz.nim
 ```
 
 With the --run switch Nim executes the file automatically after compilation. You can give your program command line arguments by appending them after the filename:
 
-```
+```nim
 nim compile --run greetings.nim arg1 arg2
 ```
 Indentation is Nim's way of grouping statements. Indentation is done with spaces only, tabulators are not allowed.
@@ -46,7 +45,7 @@ var                     # Declare (and assign) variables,
 
 = is the assignment operator. The assignment operator cannot be overloaded, overwritten or forbidden, but this might change in a future version of Nim. You can declare multiple variables with a single assignment statement and all the variables will have the same value:
 
-```
+```nim
 var x, y = 3  # assigns 3 to the variables `x` and `y`
 echo "x ", x  # outputs "x 3"
 echo "y ", y  # outputs "y 3"
@@ -60,7 +59,7 @@ Note that declaring multiple variables with a single assignment which calls a pr
 #### Let
 The let statement works like the var statement but the declared symbols are single assignment variables: After the initialization their value cannot change:
 
-```
+```nim
 let            # Use let to declare and bind variables *once*.
   legs = 400   # legs is immutable.
   arms = 2_000 # _ are ignored and are useful for long numbers.
@@ -73,7 +72,7 @@ x = "xyz"     # Illegal: assignment to `x`
 #### Constants
 Constants are symbols which are bound to a value. The constant's value cannot change. The compiler must be able to evaluate the expression in a constant declaration at compile time.
 Indentation can be used after the const keyword to list a whole section of constants:
-```
+```nim
 const            # Constants are computed at compile time. This provides
   debug = true   # performance and is useful in compile time expressions.
   compileBadCode = false
@@ -83,10 +82,10 @@ const            # Constants are computed at compile time. This provides
 
 The greetings program consists of 3 statements that are executed sequentially. Only the most primitive programs can get away with that: branching and looping are needed too.
 
-#### If statement
+### If statement
 
 The if statement is one way to branch the control flow:
-```
+```nim
 let name = readLine(stdin)
 if name == "":
   echo "Poor soul, you lost your name?"
@@ -98,10 +97,10 @@ else:
 
 There can be zero or more elif parts, and the else part is optional. The keyword elif is short for else if, and is useful to avoid excessive indentation. (The "" is the empty string. It contains no characters.)
 
-#### Case statement
+### Case statement
 
 Another way to branch is provided by the case statement. A case statement is a multi-branch:
-```
+```nim
 let name = readLine(stdin)
 case name
 of "":
@@ -200,7 +199,7 @@ for i in 0..<s.len:
 Other useful iterators for collections (like arrays and sequences) are
 items and mitems, which provides immutable and mutable elements respectively, and
 pairs and mpairs which provides the element and an index number (immutable and mutable respectively)
-```
+```nim
 for index, item in ["a","b"].pairs:
   echo item, " at index ", index
 # => a at index 0
@@ -210,13 +209,13 @@ for index, item in ["a","b"].pairs:
 #### Scopes and the block statement
 
 Control flow statements have a feature not covered yet: they open a new scope. This means that in the following example, x is not accessible outside the loop:
-```
+```nim
 while false:
   var x = "hi"
 echo x # does not work
 ```
 A while (for) statement introduces an implicit block. Identifiers are only visible within the block they have been declared. The block statement can be used to open a new block explicitly:
-```
+```nim
 block myblock:
   var x = "hi"
 echo x # does not work either
@@ -226,7 +225,7 @@ The block's label (myblock in the example) is optional
 #### Break statement
 
 A block can be left prematurely with a break statement. The break statement can leave a while, for, or a  block statement. It leaves the innermost construct, unless a label of a block is given:
-```
+```nim
 block myblock:
   echo "entering block"
   while true:
@@ -234,18 +233,19 @@ block myblock:
     break # leaves the loop, but not the block
   echo "still in block
 ```
-#### Continue statement
+### Continue statement
 
 Like in many other programming languages, a continue statement starts the next iteration immediately:
-```
+```nim
 while true:
   let x = readLine(stdin)
   if x == "": continue
   echo x
 ```
-#### When statement
+
+### When statement
 Example:
-```
+```nim
 when system.hostOS == "windows":
   echo "running on Windows!"
 elif system.hostOS == "linux":
@@ -267,7 +267,7 @@ The when statement is almost identical to the if statement, but with these diffe
 ### Procedures
 
 To define new commands like echo and readLine in the examples, the concept of a procedure is needed. (Some languages call them methods or functions.) In Nim new procedures are defined with the proc keyword:
-```
+```nim
 proc yes(question: string): bool =
   echo question, " (y/n)"
   while true:
@@ -286,83 +286,12 @@ This example shows a procedure named yes that asks the user a question and retur
 
 Some terminology: in the example question is called a (formal) parameter, "Should I..." is called an argument that is passed to this parameter
 
-#### Result variable
-
-A procedure that returns a value has an implicit result variable declared that represents the return value. A  return statement with no expression is a shorthand for return result. The result value is always returned automatically at the end of a procedure if there is no return statement at the exit.
+#### Special proc
 ```
-proc sumTillNegative(x: varargs[int]): int =
-  for i in x:
-    if i < 0:
-      return
-    result = result + i
-
-echo sumTillNegative() # echos 0
-echo sumTillNegative(3, 4, 5) # echos 12
-echo sumTillNegative(3, 4 , -1 , 6) # echos 7
-```
-The result variable is already implicitly declared at the start of the function, so declaring it again with 'var result', for example, would shadow it with a normal variable of the same name. The result variable is also already initialised with the type's default value. Note that referential data types will be nil at the start of the procedure, and thus may require manual initialisation.
-
-#### Parameters
-
-Parameters are constant in the procedure body. By default, their value cannot be changed because this allows the compiler to implement parameter passing in the most efficient way. If a mutable variable is needed inside the procedure, it has to be declared with var in the procedure body. Shadowing the parameter name is possible, and actually an idiom:
-````
-proc printSeq(s: seq, nprinted: int = -1) =
-  var nprinted = if nprinted == -1: s.len else: min(nprinted, s.len)
-  for i in 0 .. <nprinted:
-    echo s[i]
-```
-If the procedure needs to modify the argument for the caller, a var parameter can be used:
-```
-proc divmod(a, b: int; res, remainder: var int) =
-  res = a div b        # integer division
-  remainder = a mod b  # integer modulo operation
-
-var
-  x, y: int
-divmod(8, 5, x, y) # modifies x and y
-echo x
-echo y
-```
-In the example, res and remainder are var parameters. Var parameters can be modified by the procedure and the changes are visible to the caller. Note that the above example would better make use of a tuple as a return value instead of using var parameters.
-
-
-
-
-
-
-when compileBadCode:            # `when` is a compile time `if`
-  legs = legs + 1               # This error will never be compiled.
-  const input = readline(stdin) # Const values must be known at compile time.
-
-discard 1 > 2 # Note: The compiler will complain if the result of an expression
-              # is unused. `discard` bypasses this.
-
-discard """
-This can work as a multiline comment.
-Or for unparsable, broken code
-"""
-
-#
-# Data Structures
-#
-
-# Tuples
-
-var
-  child: tuple[name: string, age: int]   # Tuples have *both* field names
-  today: tuple[sun: string, temp: float] # *and* order.
-
-child = (name: "Rudiger", age: 2) # Assign all at once with literal ()
-today.sun = "Overcast"            # or individual fields.
-today.temp = 70.1
-
-# Sequences
-
-var
-  drinks: seq[string]
-
-drinks = @["Water", "Juice", "Chocolate"] # @[V1,..,Vn] is the sequence literal
-
+proc binom(n, k: int): int {..} #Computes the binomial coefficient
+proc isPowerOfTwo(x: int): bool {..} #Returns true, if x is a power of two, false otherwise. #Zero and negative numbers are not a power of two.
+proc sqrt(x: float64): float64 {..} #Computes the square root of x.
+proc floor(x: float64): float64 {..} #Computes the floor function (i.e., the largest integer not #greater than x)
 drinks.add("Milk")
 
 if "Milk" in drinks:
