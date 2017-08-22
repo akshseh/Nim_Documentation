@@ -2,6 +2,7 @@
 
 Nim (formerly Nimrod) is a statically typed, imperative programming language that gives the programmer power without compromises on runtime efficiency.
 Nim is efficient, expressive, and elegant.
+
 We start the tour with a modified "hello world" program:
 ```nim
 # This is a comment
@@ -292,20 +293,202 @@ proc binom(n, k: int): int {..} #Computes the binomial coefficient
 proc isPowerOfTwo(x: int): bool {..} #Returns true, if x is a power of two, false otherwise. #Zero and negative numbers are not a power of two.
 proc sqrt(x: float64): float64 {..} #Computes the square root of x.
 proc floor(x: float64): float64 {..} #Computes the floor function (i.e., the largest integer not #greater than x)
-drinks.add("Milk")
+proc cbrt(x: float64): float64 {..} #Computes the cubic root of x 
+proc ln(x: float64): float64 {..} #Computes the natural log of x
+proc log10(x: float64): float64 {..} #Computes the common logarithm (base 10) of x 
+proc log2[T: float32 | float64](x: T): T #Computes the binary logarithm (base 2) of x
+proc exp(x: float64): float64 {..} #Computes the exponential function of x (pow(E, x)) 
+proc fmod(x, y: float64): float64 {..} #Computes the remainder of x divided by y
+     # eg: echo fmod(-2.5, 0.3) ## -0.1
+proc `mod`[T: float32 | float64](x, y: T): T
+#Computes the modulo operation for float operators. Equivalent to x - y * floor(x/y). Note that #the remainder will always have the same sign as the divisor.
+     # eg: echo (4.0 mod -3.1) # -2.2
+proc `^`[T](x, y: T): T
+#Computes x to the power y`. ``x must be non-negative, use pow <#pow,float,float> for negative #exponents.
+proc lcm[T](x, y: T): T #Computes the least common multiple of x and y
+```
 
-if "Milk" in drinks:
-  echo "We have Milk and ", drinks.len - 1, " other drinks"
+### Result variable
 
-let myDrink = drinks[2]
+A procedure that returns a value has an implicit result variable declared that represents the return value. A  return statement with no expression is a shorthand for return result. The result value is always returned automatically at the end of a procedure if there is no return statement at the exit.
+```nim
+proc sumTillNegative(x: varargs[int]): int =
+  for i in x:
+    if i < 0:
+      return
+    result = result + i
 
-#
-# Defining Types
-#
+echo sumTillNegative() # echos 0
+echo sumTillNegative(3, 4, 5) # echos 12
+echo sumTillNegative(3, 4 , -1 , 6) # echos 7
+```
+The result variable is already implicitly declared at the start of the function, so declaring it again with 'var result', for example, would shadow it with a normal variable of the same name. The result variable is also already initialised with the type's default value. Note that referential data types will be nil at the start of the procedure, and thus may require manual initialisation.
 
-# Defining your own types puts the compiler to work for you. It's what makes
-# static typing powerful and useful.
+### Parameters
 
+Parameters are constant in the procedure body. By default, their value cannot be changed because this allows the compiler to implement parameter passing in the most efficient way. If a mutable variable is needed inside the procedure, it has to be declared with var in the procedure body. Shadowing the parameter name is possible, and actually an idiom:
+```nim
+proc printSeq(s: seq, nprinted: int = -1) =
+  var nprinted = if nprinted == -1: s.len else: min(nprinted, s.len)
+  for i in 0 .. <nprinted:
+    echo s[i]
+```
+If the procedure needs to modify the argument for the caller, a var parameter can be used:
+
+```nim
+proc divmod(a, b: int; res, remainder: var int) =
+  res = a div b        # integer division
+  remainder = a mod b  # integer modulo operation
+var
+  x, y: int
+divmod(8, 5, x, y) # modifies x and y
+echo x
+echo y
+```
+
+In the example, res and remainder are var parameters. Var parameters can be modified by the procedure and the changes are visible to the caller. Note that the above example would better make use of a tuple as a return value instead of using var parameters.
+
+### Operators
+
+The Nim library makes heavy use of overloading - one reason for this is that each operator like + is just an overloaded proc. The parser lets you use operators in infix notation (a + b) or prefix notation (+ a). An infix operator always receives two arguments, a prefix operator always one. (Postfix operators are not possible, because this would be ambiguous: does a @ @ b mean (a) @ (@b) or (a@) @ (b)? It always means  (a) @ (@b), because there are no postfix operators in Nim.)
+
+Apart from a few built-in keyword operators such as and, or, not, operators always consist of these characters: + - * \ / < > = @ $ ~ & % ! ? ^ . |
+
+User defined operators are allowed. Nothing stops you from defining your own @!?+~ operator, but doing so may reduce readability.
+
+The operator's precedence is determined by its first character. The details can be found in the manual.
+
+To define a new operator enclose the operator in backticks "``":
+```nim
+proc `$` (x: myDataType): string = ...
+# now the $ operator also works with myDataType, overloading resolution
+# ensures that $ works for built-in types just like before
+```
+The "``" notation can also be used to call an operator just like any other procedure:
+```nim
+if `==`( `+`(3, 4), 7): echo "True"
+```
+
+# Iterators
+
+Let's return to the simple counting example:
+```nim
+echo "Counting to ten: "
+for i in countup(1, 10):
+  echo i
+```
+Can a countup proc be written that supports this loop? Lets try:
+```nim
+proc countup(a, b: int): int =
+  var res = a
+  while res <= b:
+    return res
+    inc(res)
+```
+
+However, this does not work. The problem is that the procedure should not only return, but return and continue after an iteration has finished. This return and continue is called a yield statement. Now the only thing left to do is to replace the proc keyword by iterator and here it is - our first iterator:
+```nim
+iterator countup(a, b: int): int =
+  var res = a
+  while res <= b:
+    yield res
+    inc(res)
+```
+
+Iterators look very similar to procedures, but there are several important differences:
+
+- Iterators can only be called from for loops.
+- Iterators cannot contain a return statement (and procs cannot contain a yield statement).
+- Iterators have no implicit result variable.
+- Iterators do not support recursion.
+- Iterators cannot be forward declared, because the compiler must be able to inline an iterator. (This restriction will be gone in a future version of the compiler.)
+However, you can also use a closure iterator to get a different set of restrictions. See first class iterators for details. Iterators can have the same name and parameters as a proc, since essentially they have their own namespaces. Therefore it is common practice to wrap iterators in procs of the same name which accumulate the result of the iterator and return it as a sequence, like split from the strutils module.
+
+## Basic types
+
+This section deals with the basic built-in types and the operations that are available for them in detail.Defining your own types puts the compiler to work for you. It's what makes
+static typing powerful and useful.
+
+### Booleans
+
+Nim's boolean type is called bool and consists of the two pre-defined values true and false. Conditions in while, if, elif, and when statements must be of type bool.
+
+The operators not, and, or, xor, <, <=, >, >=, !=, == are defined for the bool type. The and and  or operators perform short-circuit evaluation. For example:
+```nim
+while p != nil and p.name != "xyz":
+  # p.name is not evaluated if p == nil
+  p = p.next
+``` 
+### Characters
+
+The character type is called char. Its size is always one byte, so it cannot represent most UTF-8 characters; but it can represent one of the bytes that makes up a multi-byte UTF-8 character. The reason for this is efficiency: for the overwhelming majority of use-cases, the resulting programs will still handle UTF-8 properly as UTF-8 was specially designed for this. Character literals are enclosed in single quotes.
+
+Chars can be compared with the ==, <, <=, >, >= operators. The $ operator converts a char to a string. Chars cannot be mixed with integers; to get the ordinal value of a char use the ord proc. Converting from an integer to a char is done with the chr proc.
+
+### Strings
+
+String variables are mutable, so appending to a string is possible, and quite efficient. Strings in Nim are both zero-terminated and have a length field. A string's length can be retrieved with the builtin len procedure; the length never counts the terminating zero. Accessing the terminating zero is not an error and often leads to simpler code:
+```nim
+if s[i] == 'a' and s[i+1] == 'b':
+  # no need to check whether ``i < len(s)``!
+  ...
+```
+The assignment operator for strings copies the string. You can use the & operator to concatenate strings and  add to append to a string.
+
+Strings are compared using their lexicographical order. All the comparison operators are supported. By convention, all strings are UTF-8 encoded, but this is not enforced. For example, when reading strings from binary files, they are merely a sequence of bytes. The index operation s[i] means the i-th char of s, not the i-th unichar.
+
+String variables are initialized with a special value, called nil. However, most string operations cannot deal with nil (leading to an exception being raised) for performance reasons. It is best to use empty strings "" rather than nil as the empty value. But "" often creates a string object on the heap, so there is a trade-off to be made here.
+
+### Integers
+
+Nim has these integer types built-in:  int int8 int16 int32 int64 uint uint8 uint16 uint32 uint64.
+
+The default integer type is int. Integer literals can have a type suffix to specify a non-default integer type:
+```nim
+let
+  x = 0     # x is of type ``int``
+  y = 0'i8  # y is of type ``int8``
+  z = 0'i64 # z is of type ``int64``
+  u = 0'u   # u is of type ``uint``
+```
+Most often integers are used for counting objects that reside in memory, so int has the same size as a pointer.
+
+The common operators + - * div mod < <= == != > >= are defined for integers. The and or xor not operators are also defined for integers, and provide bitwise operations. Left bit shifting is done with the shl, right shifting with the shr operator. Bit shifting operators always treat their arguments as unsigned. For arithmetic bit shifts ordinary multiplication or division can be used.
+
+Unsigned operations all wrap around; they cannot lead to over- or under-flow errors.
+
+Lossless Automatic type conversion is performed in expressions where different kinds of integer types are used. However, if the type conversion would cause loss of information, the EOutOfRange exception is raised (if the error cannot be detected at compile time).
+
+### Floats
+
+Nim has these floating point types built-in: float float32 float64.
+
+The default float type is float. In the current implementation, float is always 64-bits.
+
+Float literals can have a type suffix to specify a non-default float type:
+```nim
+var
+  x = 0.0      # x is of type ``float``
+  y = 0.0'f32  # y is of type ``float32``
+  z = 0.0'f64  # z is of type ``float64``
+```
+The common operators + - * / < <= == != > >= are defined for floats and follow the IEEE-754 standard.
+
+Automatic type conversion in expressions with different kinds of floating point types is performed: the smaller type is converted to the larger. Integer types are not converted to floating point types automatically, nor vice versa. Use the toInt and toFloat procs for these conversions.
+
+## Type Conversion
+
+Conversion between basic types is performed by using the type as a function:
+```
+var
+  x: int32 = 1.int32   # same as calling int32(1)
+  y: int8  = int8('a') # 'a' == 97'i8
+  z: float = 2.5       # int(2.5) rounds down to 2
+  sum: int = int(x) + int(y) + int(z) # sum == 100
+
+```
+
+```
 type
   Name = string # A type alias gives you a new type that is interchangable
   Age = int     # with the old type but is more descriptive.
@@ -324,20 +507,14 @@ type
   Cash = distinct int    # `distinct` makes a new type incompatible with its
   Desc = distinct string # base type.
 
-var
-  money: Cash = 100.Cash # `.Cash` converts the int to our type
-  description: Desc  = "Interesting".Desc
+```
 
-when compileBadCode:
-  john.age  = money        # Error! age is of type int and money is Cash
-  john.name = description  # Compiler says: "No way!"
 
-#
-# More Types and Data Structures
-#
 
-# Enumerations allow a type to have one of a limited number of values
+## More Types and Data Structures
 
+Enumerations allow a type to have one of a limited number of values
+```
 type
   Color = enum cRed, cBlue, cGreen
   Direction = enum # Alternative formating
@@ -348,11 +525,11 @@ type
 var
   orient = dNorth # `orient` is of type Direction, with the value `dNorth`
   pixel = cGreen # `pixel` is of type Color, with the value `cGreen`
-
+```
 discard dNorth > dEast # Enums are usually an "ordinal" type
+Subranges specify a limited valid range.
 
-# Subranges specify a limited valid range
-
+```
 type
   DieFaces = range[1..20] # Only an int from 1 to 20 is a valid value
 var
@@ -360,131 +537,133 @@ var
 
 when compileBadCode:
   my_roll = 23 # Error!
+```
 
-# Arrays
+### Arrays
+An array is a simple fixed length container. Each element in an array has the same type. The array's index type can be any ordinal type.
 
+Arrays can be constructed using []
+
+```nim
 type
-  RollCounter = array[DieFaces, int]  # Array's are fixed length and
-  DirNames = array[Direction, string] # indexed by any ordinal type.
-  Truths = array[42..44, bool]
+  IntArray = array[0..5, int] # an array that is indexed with 0..5
 var
-  counter: RollCounter
-  directions: DirNames
-  possible: Truths
+  x: IntArray
+x = [1, 2, 3, 4, 5, 6]
+for i in low(x)..high(x):
+  echo x[i]
+```
+The notation x[i] is used to access the i-th element of x. Array access is always bounds checked (at compile-time or at runtime). These checks can be disabled via pragmas or invoking the compiler with the  --bound_checks:off command line switch.
 
-possible = [false, false, false] # Literal arrays are created with [V1,..,Vn]
-possible[42] = true
+Arrays are value types, like any other Nim type. The assignment operator copies the whole array contents.
 
-directions[dNorth] = "Ahh. The Great White North!"
-directions[dWest] = "No, don't go there."
-
-my_roll = 13
-counter[my_roll] += 1
-counter[my_roll] += 1
-
-var anotherArray = ["Default index", "starts at", "0"]
-
-# More data structures are available, including tables, sets, lists, queues,
-# and crit bit trees.
-# http://nim-lang.org/docs/lib.html#collections-and-algorithms
-
-#
-# IO and Control Flow
-#
-
-# `case`, `readLine()`
-
-echo "Read any good books lately?"
-case readLine(stdin)
-of "no", "No":
-  echo "Go to your local library."
-of "yes", "Yes":
-  echo "Carry on, then."
-else:
-  echo "That's great; I assume."
-
-# `while`, `if`, `continue`, `break`
-
-import strutils as str # http://nim-lang.org/docs/strutils.html
-echo "I'm thinking of a number between 41 and 43. Guess which!"
-let number: int = 42
+The built-in len proc returns the array's length. low(a) returns the lowest valid index for the array a and high(a) the highest valid index.
+```nim
+type
+  Direction = enum
+    north, east, south, west
+  BlinkLights = enum
+    off, on, slowBlink, mediumBlink, fastBlink
+  LevelSetting = array[north..west, BlinkLights]
 var
-  raw_guess: string
-  guess: int
-while guess != number:
-  raw_guess = readLine(stdin)
-  if raw_guess == "": continue # Skip this iteration
-  guess = str.parseInt(raw_guess)
-  if guess == 1001:
-    echo("AAAAAAGGG!")
-    break
-  elif guess > number:
-    echo("Nope. Too high.")
-  elif guess < number:
-    echo(guess, " is too low")
-  else:
-    echo("Yeeeeeehaw!")
+  level: LevelSetting
+level[north] = on
+level[south] = slowBlink
+level[east] = fastBlink
+echo repr(level)  # --> [on, fastBlink, slowBlink, off]
+echo low(level)   # --> north
+echo len(level)   # --> 4
+echo high(level)  # --> west
+```
+The syntax for nested arrays (multidimensional) in other languages is a matter of appending more brackets because usually each dimension is restricted to the same index type as the others. In Nim you can have different dimensions with different index types, so the nesting syntax is slightly different. Building on the previous example where a level is defined as an array of enums indexed by yet another enum, we can add the following lines to add a light tower type subdivided in height levels accessed through their integer index:
+```nim
+type
+  LightTower = array[1..10, LevelSetting]
+var
+  tower: LightTower
+tower[1][north] = slowBlink
+tower[1][east] = mediumBlink
+echo len(tower)     # --> 10
+echo len(tower[1])  # --> 4
+echo repr(tower)    # --> [[slowBlink, mediumBlink, ...more output..
+# The following lines don't compile due to type mismatch errors
+#tower[north][east] = on
+#tower[0][1] = on
+```
+Note how the built-in len proc returns only the array's first dimension length. Another way of defining the  LightTower to better illustrate its nested nature would be to omit the previous definition of the  LevelSetting type and instead write it embedded directly as the type of the first dimension:
+```nim
+type
+  LightTower = array[1..10, array[north..west, BlinkLights]]
+```
+It is quite common to have arrays start at zero, so there's a shortcut syntax to specify a range from zero to the specified index minus one:
+```
+type
+  IntArray = array[0..5, int] # an array that is indexed with 0..5
+  QuickArray = array[6, int]  # an array that is indexed with 0..5
+var
+  x: IntArray
+  y: QuickArray
+x = [1, 2, 3, 4, 5, 6]
+y = x
+for i in low(x)..high(x):
+  echo x[i], y[i]
+```
+### Tuples and Sequences
 
-#
-# Iteration
-#
+```nim
+# Tuples
 
-for i, elem in ["Yes", "No", "Maybe so"]: # Or just `for elem in`
-  echo(elem, " is at index: ", i)
+var
+  child: tuple[name: string, age: int]   # Tuples have *both* field names
+  today: tuple[sun: string, temp: float] # *and* order.
 
-for k, v in items(@[(person: "You", power: 100), (person: "Me", power: 9000)]):
-  echo v
+child = (name: "Rudiger", age: 2) # Assign all at once with literal ()
+today.sun = "Overcast"            # or individual fields.
+today.temp = 70.1
 
-let myString = """
-an <example>
-`string` to
-play with
-""" # Multiline raw string
+# Sequences
 
-for line in splitLines(myString):
-  echo(line)
+var
+  drinks: seq[string]
 
-for i, c in myString:       # Index and letter. Or `for j in` for just letter
-  if i mod 2 == 0: continue # Compact `if` form
-  elif c == 'X': break
-  else: echo(c)
+drinks = @["Water", "Juice", "Chocolate"] # @[V1,..,Vn] is the sequence literal
 
-#
-# Procedures
-#
+drinks.add("Milk")
 
-type Answer = enum aYes, aNo
+if "Milk" in drinks:
+  echo "We have Milk and ", drinks.len - 1, " other drinks"
 
-proc ask(question: string): Answer =
-  echo(question, " (y/n)")
-  while true:
-    case readLine(stdin)
-    of "y", "Y", "yes", "Yes":
-      return Answer.aYes  # Enums can be qualified
-    of "n", "N", "no", "No":
-      return Answer.aNo
-    else: echo("Please be clear: yes or no")
+let myDrink = drinks[2]
+```
 
-proc addSugar(amount: int = 2) = # Default amount is 2, returns nothing
-  assert(amount > 0 and amount < 9000, "Crazy Sugar")
-  for a in 1..amount:
-    echo(a, " sugar...")
 
-case ask("Would you like sugar in your tea?")
-of aYes:
-  addSugar(3)
-of aNo:
-  echo "Oh do take a little!"
-  addSugar()
-# No need for an `else` here. Only `yes` and `no` are possible.
 
-#
-# FFI
-#
+### From statement
 
-# Because Nim compiles to C, FFI is easy:
+We have already seen the simple import statement that just imports all exported symbols. An alternative that only imports listed symbols is the from import statement:
+```
+from mymodule import x, y, z
+```
+The from statement can also force namespace qualification on symbols, thereby making symbols available, but needing to be qualified to be used.
 
-proc strcmp(a, b: cstring): cint {.importc: "strcmp", nodecl.}
+```nim
+from mymodule import x, y, z
 
-let cmp = strcmp("C?", "Easy!")
+x()           # use x without any qualificationfrom mymodule import nil
+
+mymodule.x()  # must qualify x with the module name as prefix
+
+x()           # using x here without qualification is a compile error
+```
+Since module names are generally long to be descriptive, you can also define a shorter alias to use when qualifying symbols.
+```
+from mymodule as m import nil
+
+m.x()         # m is aliasing mymodule
+```
+### Include statement
+
+The include statement does something fundamentally different than importing a module: it merely includes the contents of a file. The include statement is useful to split up a large module into several files:
+```
+include fileA, fileB, fileC
 ```
