@@ -671,3 +671,40 @@ The include statement does something fundamentally different than importing a mo
 ```nim
 include fileA, fileB, fileC
 ```
+## Macros
+
+Macros enable advanced compile-time code transformations, but they cannot change Nim's syntax. However, this is no real restriction because Nim's syntax is flexible enough anyway. Macros have to be implemented in pure Nim code if the foreign function interface (FFI) is not enabled in the compiler, but other than that restriction (which at some point in the future will go away) you can write any kind of Nim code and the compiler will run it at compile time.
+
+### Building your first macro
+
+To give a footstart to writing macros we will show now how to turn your typical dynamic code into something that compiles statically. For the exercise we will use the following snippet of code as the starting point:
+
+```nim
+import strutils, tables
+
+proc readCfgAtRuntime(cfgFilename: string): Table[string, string] =
+  let
+    inputString = readFile(cfgFilename)
+  var
+    source = ""
+  
+  result = initTable[string, string]()
+  for line in inputString.splitLines:
+    # Ignore empty lines
+    if line.len < 1: continue
+    var chunks = split(line, ',')
+    if chunks.len != 2:
+      quit("Input needs comma split values, got: " & line)
+    result[chunks[0]] = chunks[1]
+  
+  if result.len < 1: quit("Input file empty!")
+
+let info = readCfgAtRuntime("data.cfg")
+
+when isMainModule:
+  echo info["licenseOwner"]
+  echo info["licenseKey"]
+  echo info["version"]
+```  
+ 
+Presumably this snippet of code could be used in a commercial software, reading a configuration file to display information about the person who bought the software. 
