@@ -543,7 +543,7 @@ when compileBadCode:
 ```
 
 ### Arrays
-An array is a simple fixed length container. Each element in an array has the same type. The array's index type can be any ordinal type.
+An array is a simple fixed length container. Each element in an array has the same type. The array's index type can be any ordinal type. They are like classic C arrays, their size is specified at compile-time and cannot be given or changed at runtime.
 
 Arrays can be constructed using []
 
