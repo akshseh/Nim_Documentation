@@ -611,35 +611,26 @@ y = x
 for i in low(x)..high(x):
   echo x[i], y[i]
 ```
-### Tuples and Sequences
 
+### Sort
+
+Default Nim sort (an implementation of merge sort). The sorting is guaranteed to be stable and the worst case is guaranteed to be O(n log n). The current implementation uses an iterative mergesort to achieve this. It uses a temporary sequence of length a.len div 2. Currently Nim does not support a sensible default argument for cmp, so you have to provide one of your own. However, the system.cmp procs can be used:
 ```nim
-# Tuples
-
-var
-  child: tuple[name: string, age: int]   # Tuples have *both* field names
-  today: tuple[sun: string, temp: float] # *and* order.
-
-child = (name: "Rudiger", age: 2) # Assign all at once with literal ()
-today.sun = "Overcast"            # or individual fields.
-today.temp = 70.1
+sort(myIntArray, system.cmp[int])
+# do not use cmp[string] here as we want to use the specialized
+# overload:
+sort(myStrArray, system.cmp)
+```
 
 # Sequences
 
+Sequences are similar to arrays but of dynamic length which may change during runtime (like strings). Since sequences are resizable they are always allocated on the heap and garbage collected.Sequences are always indexed with an int starting at position 0. The len, low and high operations are available for sequences too. The notation x[i] can be used to access the i-th element of x. Sequence variables are initialized with nil.
+```nim
 var
-  drinks: seq[string]
+  x: seq[int] # a reference to a sequence of integers
+x = @[1, 2, 3, 4, 5, 6] # the @ turns the array into a sequence allocated on the heap
 
-drinks = @["Water", "Juice", "Chocolate"] # @[V1,..,Vn] is the sequence literal
-
-drinks.add("Milk")
-
-if "Milk" in drinks:
-  echo "We have Milk and ", drinks.len - 1, " other drinks"
-
-let myDrink = drinks[2]
 ```
-
-
 
 ### From statement
 
@@ -670,6 +661,7 @@ The include statement does something fundamentally different than importing a mo
 ```nim
 include fileA, fileB, fileC
 ```
+
 ## Macros
 
 Macros enable advanced compile-time code transformations, but they cannot change Nim's syntax. However, this is no real restriction because Nim's syntax is flexible enough anyway. Macros have to be implemented in pure Nim code if the foreign function interface (FFI) is not enabled in the compiler, but other than that restriction (which at some point in the future will go away) you can write any kind of Nim code and the compiler will run it at compile time.
