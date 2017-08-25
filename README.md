@@ -289,6 +289,8 @@ Some terminology: in the example question is called a (formal) parameter, "Shoul
 
 ### Special proc
 ```nim
+import math
+
 proc binom(n, k: int): int {..} #Computes the binomial coefficient
 proc isPowerOfTwo(x: int): bool {..} #Returns true, if x is a power of two, false otherwise. 
 #Zero and negative numbers are not a power of two.
