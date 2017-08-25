@@ -289,6 +289,7 @@ Some terminology: in the example question is called a (formal) parameter, "Shoul
 
 ### Special proc
 ```nim
+
 import math
 
 proc binom(n, k: int): int {..} #Computes the binomial coefficient
@@ -296,9 +297,7 @@ proc isPowerOfTwo(x: int): bool {..} #Returns true, if x is a power of two, fals
 #Zero and negative numbers are not a power of two.
 proc sqrt(x: float64): float64 {..} #Computes the square root of x.
 proc floor(x: float64): float64 {..} #Computes the floor function
-proc cbrt(x: float64): float64 {..} #Computes the cubic root of x 
 proc ln(x: float64): float64 {..} #Computes the natural log of x
-proc log10(x: float64): float64 {..} #Computes the common logarithm (base 10) of x 
 proc log2[T: float32 | float64](x: T): T #Computes the binary logarithm (base 2) of x
 proc exp(x: float64): float64 {..} #Computes the exponential function of x (pow(E, x)) 
 proc fmod(x, y: float64): float64 {..} #Computes the remainder of x divided by y
@@ -680,7 +679,8 @@ Macros enable advanced compile-time code transformations, but they cannot change
 To give a footstart to writing macros we will show now how to turn your typical dynamic code into something that compiles statically. For the exercise we will use the following snippet of code as the starting point:
 
 ```nim
-import strutils, tables
+import strutils 
+import tables
 
 proc readCfgAtRuntime(cfgFilename: string): Table[string, string] =
   let
