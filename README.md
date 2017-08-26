@@ -143,9 +143,12 @@ The while statement is a simple looping construct:
 ```nim
 echo "What's your name? "
 var name = readLine(stdin)
-while name == "":
-  echo "Please tell me your name: "
+var x : int
+x = 0
+while x < 3:
+  echo "Please tell me your friend's name: "
   name = readLine(stdin)
+  inc(x)
   # no ``var``, because we do not declare a new variable here
 ```
 The example uses a while loop to keep asking the users for their name, as long as the user types in nothing (only presses RETURN).
@@ -535,14 +538,15 @@ It is quite common to have arrays start at zero, so there's a shortcut syntax to
 ```nim
 type
   IntArray = array[0..5, int] # an array that is indexed with 0..5
-  QuickArray = array[6, int]  # an array that is indexed with 0..5
+  QuickArray = array[6, array[2,int]]  # a 5*2 matrix
 var
   x: IntArray
   y: QuickArray
 x = [1, 2, 3, 4, 5, 6]
-y = x
 for i in low(x)..high(x):
-  echo x[i], y[i]
+  echo x[i]
+for i in 0..5:
+  echo y[i][0]," ",y[i][1]
 ```
 
 ### Sort
