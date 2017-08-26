@@ -49,13 +49,10 @@ var                     # Declare (and assign) variables,
 ```nim
 var x, y = 3  # assigns 3 to the variables `x` and `y`
 echo "x ", x  # outputs "x 3"
-echo "y ", y  # outputs "y 3"
 x = 42        # changes `x` to 42 without changing `y`
 echo "x ", x  # outputs "x 42"
-echo "y ", y  # outputs "y 3"
 ```
 Note that declaring multiple variables with a single assignment which calls a procedure can have unexpected results: the compiler will unroll the assignments and end up calling the procedure several times. If the result of the procedure depends on side effects, your variables may end up having different values! For safety use only constant values
-
 
 ### Let
 The let statement works like the var statement but the declared symbols are single assignment variables: After the initialization their value cannot change:
@@ -119,8 +116,7 @@ As it can be seen, for an of branch a comma separated list of values is also all
 The case statement can deal with integers, other ordinal types and strings. (What an ordinal type is will be explained soon.) For integers or other ordinal types value ranges are also possible:
 
 ```nim
-# this statement will be explained later:
-from strutils import parseInt
+from strutils import parseInt  #header file
 
 echo "A number please: "
 let n = parseInt(readLine(stdin))
@@ -235,7 +231,6 @@ block myblock:
   echo "still in block
 ```
 ### Continue statement
-
 Like in many other programming languages, a continue statement starts the next iteration immediately:
 ```nim
 while true:
@@ -251,8 +246,6 @@ when system.hostOS == "windows":
   echo "running on Windows!"
 elif system.hostOS == "linux":
   echo "running on Linux!"
-elif system.hostOS == "macosx":
-  echo "running on Mac OS X!"
 else:
   echo "unknown operating system"
 ```
@@ -290,15 +283,13 @@ Some terminology: in the example question is called a (formal) parameter, "Shoul
 ### Special proc
 ```nim
 
-import math
+import math #include this header file
 
-proc binom(n, k: int): int {..} #Computes the binomial coefficient
 proc isPowerOfTwo(x: int): bool {..} #Returns true, if x is a power of two, false otherwise. 
 #Zero and negative numbers are not a power of two.
 proc sqrt(x: float64): float64 {..} #Computes the square root of x.
 proc floor(x: float64): float64 {..} #Computes the floor function
 proc ln(x: float64): float64 {..} #Computes the natural log of x
-proc log2[T: float32 | float64](x: T): T #Computes the binary logarithm (base 2) of x
 proc exp(x: float64): float64 {..} #Computes the exponential function of x (pow(E, x)) 
 proc fmod(x, y: float64): float64 {..} #Computes the remainder of x divided by y
      # eg: echo fmod(-2.5, 0.3) ## -0.1
@@ -399,18 +390,11 @@ iterator countup(a, b: int): int =
 ```
 
 Iterators look very similar to procedures, but there are several important differences:
-
-- Iterators can only be called from for loops.
-- Iterators cannot contain a return statement (and procs cannot contain a yield statement).
-- Iterators have no implicit result variable.
-- Iterators do not support recursion.
-- Iterators cannot be forward declared, because the compiler must be able to inline an iterator. (This restriction will be gone in a future version of the compiler.)
-However, you can also use a closure iterator to get a different set of restrictions. See first class iterators for details. Iterators can have the same name and parameters as a proc, since essentially they have their own namespaces. Therefore it is common practice to wrap iterators in procs of the same name which accumulate the result of the iterator and return it as a sequence, like split from the strutils module.
+It is common practice to wrap iterators in procs of the same name which accumulate the result of the iterator and return it as a sequence, like split from the strutils module.
 
 ## Basic types
 
-This section deals with the basic built-in types and the operations that are available for them in detail.Defining your own types puts the compiler to work for you. It's what makes
-static typing powerful and useful.
+This section deals with the basic built-in types and the operations that are available for them in detail.Defining your own types puts the compiler to work for you. It's what makes static typing powerful and useful.
 
 ### Booleans
 
@@ -430,7 +414,6 @@ Chars can be compared with the ==, <, <=, >, >= operators. The $ operator conver
 
 ### Strings
 
-String variables are mutable, so appending to a string is possible, and quite efficient. Strings in Nim are both zero-terminated and have a length field. A string's length can be retrieved with the builtin len procedure; the length never counts the terminating zero. Accessing the terminating zero is not an error and often leads to simpler code:
 ```nim
 if s[i] == 'a' and s[i+1] == 'b':
   # no need to check whether ``i < len(s)``!
@@ -438,13 +421,7 @@ if s[i] == 'a' and s[i+1] == 'b':
 ```
 The assignment operator for strings copies the string. You can use the & operator to concatenate strings and  add to append to a string.
 
-Strings are compared using their lexicographical order. All the comparison operators are supported. By convention, all strings are UTF-8 encoded, but this is not enforced. For example, when reading strings from binary files, they are merely a sequence of bytes. The index operation s[i] means the i-th char of s, not the i-th unichar.
-
-String variables are initialized with a special value, called nil. However, most string operations cannot deal with nil (leading to an exception being raised) for performance reasons. It is best to use empty strings "" rather than nil as the empty value. But "" often creates a string object on the heap, so there is a trade-off to be made here.
-
 ### Integers
-
-Nim has these integer types built-in:  int int8 int16 int32 int64 uint uint8 uint16 uint32 uint64.
 
 The default integer type is int. Integer literals can have a type suffix to specify a non-default integer type:
 ```nim
@@ -464,19 +441,14 @@ Lossless Automatic type conversion is performed in expressions where different k
 
 ### Floats
 
-Nim has these floating point types built-in: float float32 float64.
-
-The default float type is float. In the current implementation, float is always 64-bits.
-
-Float literals can have a type suffix to specify a non-default float type:
+Nim has these floating point types built-in: float float32 float64. The default float type is float. In the current implementation, float is always 64-bits. Float literals can have a type suffix to specify a non-default float type:
 ```nim
 var
   x = 0.0      # x is of type ``float``
   y = 0.0'f32  # y is of type ``float32``
   z = 0.0'f64  # z is of type ``float64``
 ```
-The common operators + - * / < <= == != > >= are defined for floats and follow the IEEE-754 standard.
-
+The common operators + - * / < <= == != > >= are defined for floats.
 Automatic type conversion in expressions with different kinds of floating point types is performed: the smaller type is converted to the larger. Integer types are not converted to floating point types automatically, nor vice versa. Use the toInt and toFloat procs for these conversions.
 
 ## Type Conversion
@@ -491,53 +463,14 @@ var
 
 ```
 
-```nim
-type
-  Name = string # A type alias gives you a new type that is interchangable
-  Age = int     # with the old type but is more descriptive.
-  Person = tuple[name: Name, age: Age] # Define data structures too.
-  AnotherSyntax = tuple
-    fieldOne: string
-    secondField: int
-
-var
-  john: Person = (name: "John B.", age: 17)
-  newage: int = 18 # It would be better to use Age than int
-
-john.age = newage # But still works because int and Age are synonyms
-
-type
-  Cash = distinct int    # `distinct` makes a new type incompatible with its
-  Desc = distinct string # base type.
-
-```
-
-
-
-## More Types and Data Structures
-
-Enumerations allow a type to have one of a limited number of values
-```nim
-type
-  Color = enum cRed, cBlue, cGreen
-  Direction = enum # Alternative formating
-    dNorth
-    dWest
-    dEast
-    dSouth
-var
-  orient = dNorth # `orient` is of type Direction, with the value `dNorth`
-  pixel = cGreen # `pixel` is of type Color, with the value `cGreen`
-```
-discard dNorth > dEast # Enums are usually an "ordinal" type
-Subranges specify a limited valid range.
+### Defining Types
 
 ```nim
 type
   DieFaces = range[1..20] # Only an int from 1 to 20 is a valid value
 var
   my_roll: DieFaces = 13
-
+  
 when compileBadCode:
   my_roll = 23 # Error!
 ```
@@ -616,6 +549,8 @@ for i in low(x)..high(x):
 
 Default Nim sort (an implementation of merge sort). The sorting is guaranteed to be stable and the worst case is guaranteed to be O(n log n). The current implementation uses an iterative mergesort to achieve this. It uses a temporary sequence of length a.len div 2. Currently Nim does not support a sensible default argument for cmp, so you have to provide one of your own. However, the system.cmp procs can be used:
 ```nim
+include algorithm  #header file for sort function
+
 sort(myIntArray, system.cmp[int])
 # do not use cmp[string] here as we want to use the specialized
 # overload:
@@ -629,7 +564,6 @@ Sequences are similar to arrays but of dynamic length which may change during ru
 var
   x: seq[int] # a reference to a sequence of integers
 x = @[1, 2, 3, 4, 5, 6] # the @ turns the array into a sequence allocated on the heap
-
 ```
 
 ### From statement
@@ -642,17 +576,13 @@ The from statement can also force namespace qualification on symbols, thereby ma
 
 ```nim
 from mymodule import x, y, z
-
 x()           # use x without any qualificationfrom mymodule import nil
-
 mymodule.x()  # must qualify x with the module name as prefix
-
 x()           # using x here without qualification is a compile error
 ```
 Since module names are generally long to be descriptive, you can also define a shorter alias to use when qualifying symbols.
 ```nim
 from mymodule as m import nil
-
 m.x()         # m is aliasing mymodule
 ```
 ### Include statement
@@ -679,6 +609,7 @@ proc readCfgAtRuntime(cfgFilename: string): Table[string, string] =
     inputString = readFile(cfgFilename)
   var
     source = ""
+    a,b : int
   
   result = initTable[string, string]()
   for line in inputString.splitLines:
@@ -688,15 +619,9 @@ proc readCfgAtRuntime(cfgFilename: string): Table[string, string] =
     if chunks.len != 2:
       quit("Input needs comma split values, got: " & line)
     result[chunks[0]] = chunks[1]
-  
+    var chunkInt = split(readLine(stdin),' ')
+    a = parseInt(chunkInt[0])
+    b = parseInt(chunkInt[1]) 
   if result.len < 1: quit("Input file empty!")
 
-let info = readCfgAtRuntime("data.cfg")
-
-when isMainModule:
-  echo info["licenseOwner"]
-  echo info["licenseKey"]
-  echo info["version"]
 ```  
- 
-Presumably this snippet of code could be used in a commercial software, reading a configuration file to display information about the person who bought the software. 
